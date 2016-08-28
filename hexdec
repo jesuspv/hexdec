@@ -1,0 +1,140 @@
+#!/bin/bash
+
+#######################################
+# Constants
+#######################################
+
+SCRIPT=$(basename $(readlink -f $BASH_SOURCE))
+VERSION=0.0.0
+DICTIONARY_PREFIX=$(echo ${SCRIPT}_ | tr [:lower:] [:upper:])
+
+#######################################
+# Logic
+#######################################
+
+# $1: metadata
+function get-metadata-bitshift()
+{
+   echo "${1#0x}" \
+   | tr [:lower:] [:upper:] \
+   | sed 's|^|ibase=16; obase=2; |' \
+   | bc \
+   | sed -e 's|.*1||' \
+   | tr -d '\n' \
+   | wc --chars
+}
+
+function decode-metadatum()
+{
+   local METADATA_NAME=$1
+   local METADATA_MASK=$2
+   local ENTRY_METADATA=$3
+   local ENTRY_MASK=$4
+
+   # is field part of the mask?
+   if ((($METADATA_MASK & $ENTRY_MASK) == $METADATA_MASK)); then
+      # decode
+      echo $METADATA_NAME=$((($ENTRY_METADATA & $METADATA_MASK) >> `get-metadata-bitshift $METADATA_MASK`))
+   fi
+}
+
+# $1: metadata
+# $2: mask
+function decode-metadata()
+{
+   compgen -A variable $DICTIONARY_PREFIX \
+   | while read NAME; do
+      decode-metadatum ${NAME#$DICTIONARY_PREFIX} ${!NAME} $1 $2 &
+   done
+   wait
+}
+
+#######################################
+# Parsers
+#######################################
+
+# $1: metadata[/mask]
+function parse-mask()
+{
+   if [[ $1 =~ / ]]; then
+      echo ${1#*/}
+   else
+      local LENGTH=$((${#1}-2)) # skipping 0x
+      printf "0x%${LENGTH}s\n" | tr ' ' 'f'
+   fi
+}
+
+# $1: metadata/mask
+function parse-metadata()
+{
+   echo -n '{'
+   decode-metadata ${1%/*} `parse-mask $1` | sort | tr '\n' ',' | sed 's|,$||'
+   echo '}'
+}
+
+#######################################
+# CLI
+#######################################
+
+function print-help()
+{
+   cat <<EOF
+NAME
+   $SCRIPT - decode masked hexadecimal data
+
+SYNOPSIS
+   $SCRIPT options metadata
+
+VERSION
+   $VERSION
+
+DESCRIPTION
+   The $SCRIPT utility decodes hexadecimal data via custom dictionaries.
+
+   The dictionary is defined via the environment variables prefixed by $DICTIONARY_PREFIX. For each
+   variable ${DICTIONARY_PREFIX}ENTRY=VALUE, ENTRY is the decoded representation and VALUE the hex
+   bitmask. For instance:
+
+      ${DICTIONARY_PREFIX}SERVICE=0x000000ff
+      ${DICTIONARY_PREFIX}ROUTER=0x0003ff00
+      ${DICTIONARY_PREFIX}PORT_STATUS=0x80000000
+
+   In case bitmasks overlap, all the matchings are printed.
+
+OPTIONS:
+   -h, --help                 display this help
+   -v, --version              display program version
+EOF
+}
+
+function print-version()
+{
+   echo "$SCRIPT version $VERSION"
+}
+
+# $*: command line arguments
+function main()
+{
+   # parse optional args
+   while [[ $1 =~ ^- ]]; do
+      case $1 in
+         -h|--help)
+            print-help
+            exit 0
+            ;;
+         -v|--version)
+            print-version
+            exit 0
+            ;;
+         *)
+            echo "error: unknown option $1" >&2
+            exit 1
+            ;;
+      esac
+      shift
+   done
+ 
+   parse-metadata $1
+}
+
+main $*
