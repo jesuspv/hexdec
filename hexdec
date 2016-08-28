@@ -5,7 +5,7 @@
 #######################################
 
 SCRIPT=$(basename $(readlink -f $BASH_SOURCE))
-VERSION=0.0.0
+VERSION=0.0.1
 DICTIONARY_PREFIX=$(echo ${SCRIPT}_ | tr [:lower:] [:upper:])
 
 #######################################
