@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #######################################
 # Constants
 #######################################
 
-SCRIPT=$(basename $(readlink -f $BASH_SOURCE))
-VERSION=0.0.1
-DICTIONARY_PREFIX=$(echo ${SCRIPT}_ | tr [:lower:] [:upper:])
+readonly SCRIPT=$(basename $(readlink -f $BASH_SOURCE))
+readonly VERSION=0.0.1
+readonly DICTIONARY_PREFIX=$(echo ${SCRIPT}_ | tr [:lower:] [:upper:])
 
 #######################################
 # Logic
@@ -26,10 +26,10 @@ function get-metadata-bitshift()
 
 function decode-metadatum()
 {
-   local METADATA_NAME=$1
-   local METADATA_MASK=$2
-   local ENTRY_METADATA=$3
-   local ENTRY_MASK=$4
+   local -r METADATA_NAME=$1
+   local -r METADATA_MASK=$2
+   local -r ENTRY_METADATA=$3
+   local -r ENTRY_MASK=$4
 
    # is field part of the mask?
    if ((($METADATA_MASK & $ENTRY_MASK) == $METADATA_MASK)); then
@@ -59,7 +59,7 @@ function parse-mask()
    if [[ $1 =~ / ]]; then
       echo ${1#*/}
    else
-      local LENGTH=$((${#1}-2)) # skipping 0x
+      local -r LENGTH=$((${#1}-2)) # skipping 0x
       printf "0x%${LENGTH}s\n" | tr ' ' 'f'
    fi
 }
