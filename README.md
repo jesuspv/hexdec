@@ -1,3 +1,14 @@
+## Installation
+
+Just make the script accessible in your `PATH`.
+
+## Development
+
+Run `bumpversion` to bump the software version.
+
+## Help
+
+```
 NAME
    hexdec - decode masked hexadecimal data
 
@@ -5,7 +16,7 @@ SYNOPSIS
    hexdec options metadata
 
 VERSION
-   0.0.0
+   0.0.1
 
 DESCRIPTION
    The hexdec utility decodes hexadecimal data via custom dictionaries.
@@ -23,3 +34,4 @@ DESCRIPTION
 OPTIONS:
    -h, --help                 display this help
    -v, --version              display program version
+```
