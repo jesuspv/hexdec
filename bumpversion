@@ -18,5 +18,5 @@ cd $PROJECT_PATH
 # remove the pasted text (from '## Help' line)
 sed -i "$((`grep -n '## Help' README.md  | cut -d: -f1`+3)),\$d" README.md
 # and then, paste the up-to-date help
-./mapre --help >> README.md 
-echo '```'     >> README.md
+./$(basename $PROJECT_PATH) --help >> README.md
+echo '```'                         >> README.md
