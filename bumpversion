@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 # bump
 docker run \
    --env USER  --env USER_ID=`id -u` \
@@ -20,3 +22,6 @@ sed -i "$((`grep -n '## Help' README.md  | cut -d: -f1`+3)),\$d" README.md
 # and then, paste the up-to-date help
 ./$(basename $PROJECT_PATH) --help >> README.md
 echo '```'                         >> README.md
+
+git add README.md
+git commit --amend # adding it to the bumpversion commit
